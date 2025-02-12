@@ -1,0 +1,33 @@
+{
+  "name": "node-pyodbc",
+  "version": "1.0.0",
+  "description": "An asynchronous interface to unixODBC",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yuri-Chaves/node-pyodbc.git"
+  },
+  "keywords": [
+    "odbc",
+    "database",
+    "communication",
+    "db",
+    "driver"
+  ],
+  "author": "Yuri Chaves",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Yuri-Chaves/node-pyodbc/issues"
+  },
+  "homepage": "https://github.com/Yuri-Chaves/node-pyodbc#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.13.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.3"
+  }
+}
