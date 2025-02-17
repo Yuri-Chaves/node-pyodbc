@@ -3,3 +3,4 @@
 tsconfig.json
 .npmignore
 index.ts
+.vscode
