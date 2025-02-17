@@ -13,3 +13,41 @@
 - [python 3.X.X](https://www.python.org/)
 - [pyodbc](https://github.com/mkleehammer/pyodbc)
 - Node.js >=18.20.4
+
+## Configurando o Client
+O Client ODBC aceita 2 tipagens para a configuração
+```typescript
+import type { IODBCDNSConfig, IODBCNoDNSConfig } from 'node-pyodbc'
+
+// Configuração explícita
+// const config : IODBCNoDNSConfig = {
+//   driver: "DRIVER",
+//   server: "myServer",
+//   database: "myDatabase", // Opcional
+//   user: "ME",
+//   password: "somePa$$word",
+// }
+
+// Configuração DNS
+const config: IODBCDNSConfig = {
+  dns: "DNS=MYDNS",
+  user: "ME",
+  password: "somePa$$word"
+}
+```
+Basta criar uma instância do Client passando a configuração
+```typescript
+import { ODBCClient } from 'node-pyodbc'
+
+const odbcClient = new ODBCClient(config)
+```
+
+## DML's
+
+A biblioteca dispõe de algumas funções para realizar a manipulação de dados. Sendo:
+- [select](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/Select.md)
+- [insert](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/Insert.md)
+- [update](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/Update.md)
+- [delete](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/Delete.md)
+
+E caso você deseje realizar uma query mais complexa, utilize a função [query](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/Query.md)
