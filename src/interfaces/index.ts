@@ -46,7 +46,7 @@ export interface ISelect<TTableA extends object, TTableB extends object> extends
        * @note 🗒️ If you are joining tables, you need to specify the table name of the column
        * @example if `from: "users"` then use `order.columns: ["users.name"]`
        */
-      columns: Array<{} extends TTableA ? string : keyof TTableA> | Array<{} extends TTableA ? string : keyof TTableA>
+      columns: Array<string>
       direction: "ASC" | "DESC"
     }
   }
