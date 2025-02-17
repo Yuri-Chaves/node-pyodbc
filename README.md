@@ -7,3 +7,7 @@ Eu decidi desenvolver essa biblioteca para resolver um problema com caracteres e
 [Check the documentation](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/README.md)
 
 [Confira a documentação](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/README.md)
+
+Fell free to [download the experimental version](https://drive.google.com/uc?export=download&id=1mGXbztjWlRhHWwfxcNQGlgLsSih4mBLl)
+
+Sinta-se livre para [baixar a versão experimental](https://drive.google.com/uc?export=download&id=1mGXbztjWlRhHWwfxcNQGlgLsSih4mBLl)
