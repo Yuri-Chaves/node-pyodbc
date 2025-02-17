@@ -1,0 +1,5 @@
+/src/
+!/dist/src/
+tsconfig.json
+.npmignore
+index.ts
