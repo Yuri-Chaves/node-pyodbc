@@ -13,3 +13,41 @@
 - [python 3.X.X](https://www.python.org/)
 - [pyodbc](https://github.com/mkleehammer/pyodbc)
 - Node.js >=18.20.4
+
+## Configuring the Client
+The ODBC Client accepts 2 types for configuration
+```typescript
+import type { IODBCDNSConfig, IODBCNoDNSConfig } from 'node-pyodbc'
+
+// Explicit configuration
+// const config : IODBCNoDNSConfig = {
+//   driver: "DRIVER",
+//   server: "myServer",
+//   database: "myDatabase", // Opcional
+//   user: "ME",
+//   password: "somePa$$word",
+// }
+
+// DNS configuration
+const config: IODBCDNSConfig = {
+  dns: "DNS=MYDNS",
+  user: "ME",
+  password: "somePa$$word"
+}
+```
+Simply create a Client instance by passing the configuration
+```typescript
+import { ODBCClient } from 'node-pyodbc'
+
+const odbcClient = new ODBCClient(config)
+```
+
+## DML's
+
+The library has some functions to perform data manipulation. They are:
+- [select](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/Select.md)
+- [insert](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/Insert.md)
+- [update](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/Update.md)
+- [delete](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/Delete.md)
+
+And if you want to perform a more complex query, use the function [query](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/Query.md)
