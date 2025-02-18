@@ -52,6 +52,12 @@ export interface ISelect<TTableA extends object, TTableB extends object> extends
   }
 }
 
+export interface IDMResult {
+  code: string
+  message: string
+  details: string
+}
+
 export interface IInsert<T extends object> extends IBase {
   /**
    * @warning ⚠️ If you are trying to use `data` as an Array, make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts the syntax for multiple inserts:
