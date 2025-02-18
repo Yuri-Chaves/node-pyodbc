@@ -77,6 +77,28 @@ export interface IDelete extends IBase {
   where?: string
 }
 
+export type TAggregateFunctions = 'MIN' | 'MAX' | 'COUNT' | 'SUM' | 'AVG'
+
+export interface IAggregateFunctions<T extends object> extends IBase {
+  fn: TAggregateFunctions
+  /**
+   * @note 🗒️ `column: '*'` is used just if `fn` = **COUNT**
+   */
+  column: {} extends T ? string : keyof T | '*'
+  where?: string
+  groupBy?: {} extends T? string : keyof T
+  alias?: string
+  /**
+   * @description If **distinct** is true, rows with the same value for the specified column will be counted as one
+   * @note 🗒️ `distinct` is used just if `fn` = **COUNT**
+   */
+  distinct?: boolean
+  /**
+   * @note 🗒️ `expression` is used just if `fn` = **SUM**
+   */
+  expression?: string
+}
+
 export type TODBCErrorCode =
   | "QUERY_EXECUTION_ERROR"
   | "INVALID_OUTPUT"

@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process'
 import path from 'node:path'
 import type {
+  IAggregateFunctions,
   IDelete,
   IInsert,
   IODBCDNSConfig,
@@ -200,6 +201,42 @@ export class ODBCClient {
     } catch (error) {
       return new ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`)
     }
+    return this.query({ query, database })
+  }
+
+  async aggregateFunction<T extends object = {}, TResult extends object = {}>({
+    fn,
+    column,
+    table,
+    database,
+    where,
+    groupBy,
+    alias,
+    distinct,
+    expression,
+  }: IAggregateFunctions<T>): Promise<TResult> {
+    let query = ''
+    try {
+      query += 'SELECT '
+      query += fn
+      query += distinct && fn === 'COUNT' ? ' (DISTINCT ' : ' ('
+      query += column.toString()
+      query += expression && fn === 'SUM' ? ` ${expression}` : ''
+      query += alias ? `) AS ${alias}` : ')'
+      query += groupBy ? `, ${groupBy.toString()}` : ''
+      query += ` FROM ${table}`
+      query += where ? ` WHERE ${where}` : ''
+      query += groupBy ? ` GROUP BY ${groupBy.toString()}` : ''
+      query += ';'
+      JSON.parse(query)
+    } catch (error) {
+      throw new ODBCError(
+        'Error while creating the query',
+        'INVALID_INPUT',
+        `${error}`,
+      )
+    }
+
     return this.query({ query, database })
   }
 }
