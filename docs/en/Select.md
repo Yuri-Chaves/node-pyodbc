@@ -1,8 +1,9 @@
 # Select
 
-The select function accepts 2 types
+The select function accepts 3 types
 - TableA: Main table type
 - TableB: Join table type
+- Data: Data return type
 ```typescript
 type TableA = {
   id: number
@@ -14,7 +15,9 @@ type TableB = {
   country: string
 }
 
-const data = await odbcClient.select<TableA, TableB>({
+type Data = TableA["name"] & TableB["country"]
+
+const data = await odbcClient.select<TableA, TableB, Data>({
   columns: ['name'], // accept '*' to select all columns of the main table
   table: 'users',
   database: 'example', // Only if the Client has been explicitly configured
