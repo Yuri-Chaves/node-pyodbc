@@ -52,6 +52,12 @@ export interface ISelect<TTableA extends object, TTableB extends object> extends
   }
 }
 
+export interface IDMResult {
+  code: string
+  message: string
+  details: string
+}
+
 export interface IInsert<T extends object> extends IBase {
   /**
    * @warning ⚠️ If you are trying to use `data` as an Array, make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts the syntax for multiple inserts:
@@ -75,6 +81,28 @@ export interface IDelete extends IBase {
    * @warning ⚠️ Be careful when deleting records. If you omit the `where` clause, __ALL__ records will be deleted!
    */
   where?: string
+}
+
+export type TAggregateFunctions = 'MIN' | 'MAX' | 'COUNT' | 'SUM' | 'AVG'
+
+export interface IAggregateFunctions<T extends object> extends IBase {
+  fn: TAggregateFunctions
+  /**
+   * @note 🗒️ `column: '*'` is used just if `fn` = **COUNT**
+   */
+  column: {} extends T ? string : keyof T | '*'
+  where?: string
+  groupBy?: {} extends T? string : keyof T
+  alias?: string
+  /**
+   * @description If **distinct** is true, rows with the same value for the specified column will be counted as one
+   * @note 🗒️ `distinct` is used just if `fn` = **COUNT**
+   */
+  distinct?: boolean
+  /**
+   * @note 🗒️ `expression` is used just if `fn` = **SUM**
+   */
+  expression?: string
 }
 
 export type TODBCErrorCode =

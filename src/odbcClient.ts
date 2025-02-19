@@ -1,6 +1,8 @@
 import { spawn } from 'node:child_process'
 import path from 'node:path'
 import type {
+  IAggregateFunctions,
+  IDMResult,
   IDelete,
   IInsert,
   IODBCDNSConfig,
@@ -98,21 +100,21 @@ export class ODBCClient {
     }
   }
 
-  async select<TTableA extends object = {}, TTableB  extends object = {}>({
+  async select<TTableA extends object = {}, TTableB  extends object = {}, TResult extends object = {}>({
     columns,
     table,
     database,
     where,
     join,
     options
-  }: ISelect<TTableA, TTableB>) {
+  }: ISelect<TTableA, TTableB>): Promise<TResult> {
     let query = "SELECT "
     if (join) {
       query += utils.mountSelectString(columns, table)
       if(join.columns) {
         query += `, ${utils.mountSelectString(join.columns, join.table)}`
       }
-      query += ` FROM ${table} ${join.type || 'INNER'} ${join.table} ON ${table}.${join.on.columnA.toString()} = ${join.table}.${join.on.columnB.toString()}`
+      query += ` FROM ${table} ${join.type || 'INNER'} JOIN ${join.table} ON ${table}.${join.on.columnA.toString()} = ${join.table}.${join.on.columnB.toString()}`
     } else {
       query += `${utils.mountSelectString(columns, table)} FROM ${table}`
     }
@@ -136,7 +138,7 @@ export class ODBCClient {
     database,
     table,
     replace = false
-  }: IInsert<T>) {
+  }: IInsert<T>): Promise<IDMResult> {
     let query = ''
     try {
       if (!Array.isArray(data)) {
@@ -161,7 +163,7 @@ export class ODBCClient {
       })
       query = `INSERT${replace && ' OR REPLACE' || ''} INTO ${table}(${columnNames.join(', ')}) VALUES ${columnValues.join(', ')};`
     } catch (error) {
-      return new ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`)
+      throw new ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`)
     }
 
     return this.query({ query, database })
@@ -172,7 +174,7 @@ export class ODBCClient {
     table,
     database,
     where
-  } : IUpdate<T>) {
+  } : IUpdate<T>): Promise<IDMResult> {
     let query = ''
     try {
       const setString = Object.entries(data).filter(([_, value]) => value !== undefined).map(value => {
@@ -188,18 +190,54 @@ export class ODBCClient {
       }).join(', ')
       query = `UPDATE ${table} SET ${setString}${where && ` WHERE ${where}` || ''}`
     } catch (error) {
-      return new ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`)
+      throw new ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`)
     }
     return this.query({ query, database })
   }
 
-  async delete({ table, database, where }: IDelete) {
+  async delete({ table, database, where }: IDelete): Promise<IDMResult> {
     let query = ''
     try {
       query = `DELETE FROM ${table}${where && ` WHERE ${where}` || ''};`
     } catch (error) {
-      return new ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`)
+      throw new ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`)
     }
+    return this.query({ query, database })
+  }
+
+  async aggregateFunction<T extends object = {}, TResult extends object = {}>({
+    fn,
+    column,
+    table,
+    database,
+    where,
+    groupBy,
+    alias,
+    distinct,
+    expression,
+  }: IAggregateFunctions<T>): Promise<TResult> {
+    let query = ''
+    try {
+      query += 'SELECT '
+      query += fn
+      query += distinct && fn === 'COUNT' ? ' (DISTINCT ' : ' ('
+      query += column.toString()
+      query += expression && fn === 'SUM' ? ` ${expression}` : ''
+      query += alias ? `) AS ${alias}` : ')'
+      query += groupBy ? `, ${groupBy.toString()}` : ''
+      query += ` FROM ${table}`
+      query += where ? ` WHERE ${where}` : ''
+      query += groupBy ? ` GROUP BY ${groupBy.toString()}` : ''
+      query += ';'
+      JSON.parse(query)
+    } catch (error) {
+      throw new ODBCError(
+        'Error while creating the query',
+        'INVALID_INPUT',
+        `${error}`,
+      )
+    }
+
     return this.query({ query, database })
   }
 }

@@ -95,7 +95,7 @@ class ODBCClient {
                 if (join.columns) {
                     query += `, ${odbcUtils_1.utils.mountSelectString(join.columns, join.table)}`;
                 }
-                query += ` FROM ${table} ${join.type || 'INNER'} ${join.table} ON ${table}.${join.on.columnA.toString()} = ${join.table}.${join.on.columnB.toString()}`;
+                query += ` FROM ${table} ${join.type || 'INNER'} JOIN ${join.table} ON ${table}.${join.on.columnA.toString()} = ${join.table}.${join.on.columnB.toString()}`;
             }
             else {
                 query += `${odbcUtils_1.utils.mountSelectString(columns, table)} FROM ${table}`;
@@ -144,7 +144,7 @@ class ODBCClient {
                 query = `INSERT${replace && ' OR REPLACE' || ''} INTO ${table}(${columnNames.join(', ')}) VALUES ${columnValues.join(', ')};`;
             }
             catch (error) {
-                return new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
+                throw new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
             }
             return this.query({ query, database });
         });
@@ -169,7 +169,7 @@ class ODBCClient {
                 query = `UPDATE ${table} SET ${setString}${where && ` WHERE ${where}` || ''}`;
             }
             catch (error) {
-                return new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
+                throw new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
             }
             return this.query({ query, database });
         });
@@ -181,7 +181,30 @@ class ODBCClient {
                 query = `DELETE FROM ${table}${where && ` WHERE ${where}` || ''};`;
             }
             catch (error) {
-                return new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
+                throw new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
+            }
+            return this.query({ query, database });
+        });
+    }
+    aggregateFunction(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ fn, column, table, database, where, groupBy, alias, distinct, expression, }) {
+            let query = '';
+            try {
+                query += 'SELECT ';
+                query += fn;
+                query += distinct && fn === 'COUNT' ? ' (DISTINCT ' : ' (';
+                query += column.toString();
+                query += expression && fn === 'SUM' ? ` ${expression}` : '';
+                query += alias ? `) AS ${alias}` : ')';
+                query += groupBy ? `, ${groupBy.toString()}` : '';
+                query += ` FROM ${table}`;
+                query += where ? ` WHERE ${where}` : '';
+                query += groupBy ? ` GROUP BY ${groupBy.toString()}` : '';
+                query += ';';
+                JSON.parse(query);
+            }
+            catch (error) {
+                throw new odbcError_1.ODBCError('Error while creating the query', 'INVALID_INPUT', `${error}`);
             }
             return this.query({ query, database });
         });
