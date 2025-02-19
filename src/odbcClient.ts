@@ -229,12 +229,12 @@ export class ODBCClient {
       query += where ? ` WHERE ${where}` : ''
       query += groupBy ? ` GROUP BY ${groupBy.toString()}` : ''
       query += ';'
-      JSON.parse(query)
     } catch (error) {
       throw new ODBCError(
         'Error while creating the query',
         'INVALID_INPUT',
         `${error}`,
+        query,
       )
     }
 
