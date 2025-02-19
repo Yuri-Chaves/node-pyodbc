@@ -3,6 +3,7 @@
 A função select aceita 2 tipagens
 - TableA: Tipagem da tabela principal
 - TableB: Tipagem da tabela join
+- Data: Tipagem dos dados de retorno
 ```typescript
 type TableA = {
   id: number
@@ -14,7 +15,9 @@ type TableB = {
   country: string
 }
 
-const data = await odbcClient.select<TableA, TableB>({
+type Data = TableA["name"] & TableB["country"]
+
+const data = await odbcClient.select<TableA, TableB, Data>({
   columns: ['name'], // aceita '*' para selecionar todas as colunas da tabela principal
   table: 'users',
   database: 'example', // Apenas se o Client foi configurado de maneira explicita
