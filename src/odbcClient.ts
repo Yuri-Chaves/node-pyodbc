@@ -224,10 +224,10 @@ export class ODBCClient {
       query += column.toString()
       query += expression && fn === 'SUM' ? ` ${expression}` : ''
       query += alias ? `) AS ${alias}` : ')'
-      query += groupBy ? `, ${groupBy.toString()}` : ''
+      query += groupBy ? `, ${groupBy.join(', ').toString()}` : ''
       query += ` FROM ${table}`
       query += where ? ` WHERE ${where}` : ''
-      query += groupBy ? ` GROUP BY ${groupBy.toString()}` : ''
+      query += groupBy ? ` GROUP BY ${groupBy.join(', ').toString()}` : ''
       query += ';'
     } catch (error) {
       throw new ODBCError(
