@@ -82,7 +82,7 @@ export interface IAggregateFunctions<T extends object> extends IBase {
      */
     column: {} extends T ? string : keyof T | '*';
     where?: string;
-    groupBy?: {} extends T ? string : keyof T;
+    groupBy?: Array<{} extends T ? string : keyof T>;
     alias?: string;
     /**
      * @description If **distinct** is true, rows with the same value for the specified column will be counted as one
