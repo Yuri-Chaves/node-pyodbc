@@ -51,3 +51,7 @@ A biblioteca dispõe de algumas funções para realizar a manipulação de dados
 - [delete](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/Delete.md)
 
 E caso você deseje realizar uma query mais complexa, utilize a função [query](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/Query.md)
+
+## Aggregate Functions
+
+Caso você deseje realizar uma função agregada, utilize a função [aggregateFunction](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/AggregateFunctions.md)

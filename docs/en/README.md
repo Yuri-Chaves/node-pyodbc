@@ -50,4 +50,8 @@ The library has some functions to perform data manipulation. They are:
 - [update](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/Update.md)
 - [delete](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/Delete.md)
 
-And if you want to perform a more complex query, use the function [query](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/Query.md)
+And if you want to perform a more complex query, use the [query](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/Query.md) function
+
+## Aggregate Functions
+
+If you want to perform an aggregate function, use the [aggregateFunction](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/en/AggregateFunctions.md) function
