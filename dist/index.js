@@ -16,3 +16,4 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./src/interfaces"), exports);
 __exportStar(require("./src/odbcClient"), exports);
+//# sourceMappingURL=index.js.map

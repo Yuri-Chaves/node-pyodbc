@@ -12,3 +12,4 @@ class ODBCError extends Error {
     }
 }
 exports.ODBCError = ODBCError;
+//# sourceMappingURL=odbcError.js.map

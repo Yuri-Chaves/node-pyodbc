@@ -15,3 +15,4 @@ function mountSelectString(columns, prefix) {
 exports.utils = {
     mountSelectString
 };
+//# sourceMappingURL=odbcUtils.js.map
