@@ -1,61 +1,62 @@
 export interface IODBCNoDNSConfig {
-  driver: string
-  server: string
-  database?: string
-  user: string
-  password: string
+  driver: string;
+  server: string;
+  database?: string;
+  user: string;
+  password: string;
 }
 
 export interface IODBCDNSConfig {
-  dns: string
-  user: string
-  password: string
+  dns: string;
+  user: string;
+  password: string;
 }
 
 export interface IQuery {
-  query: string
-  database?: string
+  query: string;
+  database?: string;
 }
 
 interface IBase {
-  table: string
-  database?: string
+  table: string;
+  database?: string;
 }
 
-export interface ISelect<TTableA extends object, TTableB extends object> extends IBase {
-  columns: Array<{} extends TTableA ? string : keyof TTableA> | '*'
+export interface ISelect<TTableA extends object, TTableB extends object>
+  extends IBase {
+  columns: Array<{} extends TTableA ? string : keyof TTableA> | "*";
   /**
    * @note 🗒️ If you are joining tables, you need to specify the table name of the column
    * @example If `table: "users"` then use `where: "where users.name"` or just `where: "users.name"`
    */
-  where?: string
+  where?: string;
   join?: {
-    table: string
+    table: string;
     on: {
-      columnA: {} extends TTableA ? string : keyof TTableA
-      columnB: {} extends TTableB ? string : keyof TTableB
-    }
-    columns?: Array<{} extends TTableB ? string : keyof TTableB> | '*'
-    type?: "INNER" | "LEFT" | "RIGHT"
-  }
+      columnA: {} extends TTableA ? string : keyof TTableA;
+      columnB: {} extends TTableB ? string : keyof TTableB;
+    };
+    columns?: Array<{} extends TTableB ? string : keyof TTableB> | "*";
+    type?: "INNER" | "LEFT" | "RIGHT";
+  };
   options?: {
-    limit?: number
-    offset?: number
+    limit?: number;
+    offset?: number;
     order?: {
       /**
        * @note 🗒️ If you are joining tables, you need to specify the table name of the column
        * @example If `table: "users"` then use `order.columns: ["users.name"]`
        */
-      columns: Array<string>
-      direction: "ASC" | "DESC"
-    }
-  }
+      columns: Array<string>;
+      direction: "ASC" | "DESC";
+    };
+  };
 }
 
 export interface IDMResult {
-  code: string
-  message: string
-  details: string
+  code: string;
+  message: string;
+  details: string;
 }
 
 export interface IInsert<T extends object> extends IBase {
@@ -64,45 +65,45 @@ export interface IInsert<T extends object> extends IBase {
    *
    * `INSERT INTO <table> (<columns>) VALUES (...), (...), ...;`
    */
-  data: T | Array<T>
-  replace?: boolean
+  data: T | Array<T>;
+  replace?: boolean;
 }
 
 export interface IUpdate<T extends object> extends IBase {
-  data: T
+  data: T;
   /**
    * @warning ⚠️ Be careful when updating records. If you omit the `where` clause, __ALL__ records will be updated!
    */
-  where?: string
+  where?: string;
 }
 
 export interface IDelete extends IBase {
   /**
    * @warning ⚠️ Be careful when deleting records. If you omit the `where` clause, __ALL__ records will be deleted!
    */
-  where?: string
+  where?: string;
 }
 
-export type TAggregateFunctions = 'MIN' | 'MAX' | 'COUNT' | 'SUM' | 'AVG'
+export type TAggregateFunctions = "MIN" | "MAX" | "COUNT" | "SUM" | "AVG";
 
 export interface IAggregateFunctions<T extends object> extends IBase {
-  fn: TAggregateFunctions
+  fn: TAggregateFunctions;
   /**
    * @note 🗒️ `column: '*'` is used just if `fn` = **COUNT**
    */
-  column: {} extends T ? string : keyof T | '*'
-  where?: string
-  groupBy?: Array<{} extends T? string : keyof T>
-  alias?: string
+  column: {} extends T ? string : keyof T | "*";
+  where?: string;
+  groupBy?: Array<{} extends T ? string : keyof T>;
+  alias?: string;
   /**
    * @description If **distinct** is true, rows with the same value for the specified column will be counted as one
    * @note 🗒️ `distinct` is used just if `fn` = **COUNT**
    */
-  distinct?: boolean
+  distinct?: boolean;
   /**
    * @note 🗒️ `expression` is used just if `fn` = **SUM**
    */
-  expression?: string
+  expression?: string;
 }
 
 export type TODBCErrorCode =
@@ -110,4 +111,4 @@ export type TODBCErrorCode =
   | "INVALID_OUTPUT"
   | "INVALID_INPUT"
   | "NUMBER_OF_CONNECTIONS"
-  | "UNEXPECTED_ERROR"
+  | "UNEXPECTED_ERROR";
