@@ -22,6 +22,11 @@ interface IBase {
   database?: string;
 }
 
+export type TInsertMultipleModel =
+  | "MULTIPLE_VALUES"
+  | "SELECT_FROM"
+  | "UNION_ALL";
+
 export interface ISelect<TTableA extends object, TTableB extends object>
   extends IBase {
   columns: Array<{} extends TTableA ? string : keyof TTableA> | "*";
@@ -60,12 +65,25 @@ export interface IDMResult {
 }
 
 export interface IInsert<T extends object> extends IBase {
+  data: T;
+  replace?: boolean;
+}
+
+export interface IInsertMultiple<T extends object> extends IBase {
+  data: Array<T>;
   /**
-   * @warning ⚠️ If you are trying to use `data` as an Array, make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts the syntax for multiple inserts:
-   *
-   * `INSERT INTO <table> (<columns>) VALUES (...), (...), ...;`
+   * @default "MULTIPLE_VALUES"
+   * @description `MULTIPLE_VALUES` - SQL Server 2008 and later based. **limited** to `1000 records`
+   * @description `SELECT_FROM` - MULTIPLE_VALUES *workaround* for more than `1000 records`
+   * @description `UNION_ALL` - SQL Server 2005 and later based
+   * @warning ⚠️ Make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts this syntax.
+   * @param "MULTIPLE_VALUES" - `INSERT INTO <table> (<columns>) VALUES (...), (...), ...;`
+   * @warning ⚠️ Make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts **"MULTIPLE_VALUES"** syntax.
+   * @param "SELECT_FROM" - `INSERT INTO <table> (<columnA>, <columnA>, ...) SELECT V.<columnA>, V.<columnB>,... FROM (VALUES(<valueA>, <valueB>,...), (<valueA>, <valueB>,...), ..., (<valueA>, <valueB>,...)V(<columnA>, <columnB> ...));`
+   * @warning ⚠️ Make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts this syntax.
+   * @param "UNION_ALL" - `INSERT INTO <table> (<columns>) SELECT <values> UNION ALL SELECT <values> UNION ALL ... UNION ALL SELECT <values>;`
    */
-  data: T | Array<T>;
+  model?: TInsertMultipleModel;
   replace?: boolean;
 }
 

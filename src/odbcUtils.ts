@@ -1,3 +1,5 @@
+import { TInsertMultipleModel } from "./interfaces";
+
 function mountSelectString(columns: Array<any> | string, prefix?: string) {
   let selectString: string;
   const _prefix = `${prefix}.` || "";
@@ -11,6 +13,58 @@ function mountSelectString(columns: Array<any> | string, prefix?: string) {
   return selectString;
 }
 
+function mountMultipleInsertString(
+  table: string,
+  data: Array<object>,
+  model: TInsertMultipleModel,
+  replace: boolean = false
+) {
+  const columnNames = Object.entries(data[0])
+    .filter(([_, value]) => value !== undefined)
+    .map((value) => {
+      return value[0];
+    });
+  const columnValues: Array<string> = [];
+
+  data.map((d) => {
+    const arr: Array<string> = [];
+    Object.entries(d)
+      .filter(([_, value]) => value !== undefined)
+      .map((value) => {
+        if (typeof value[1] === "string") {
+          arr.push(`'${value[1]}'`);
+        } else if (typeof value[1] === "object") {
+          arr.push(`'${JSON.stringify(value[1])}'`);
+        } else {
+          arr.push(value[1]);
+        }
+      });
+    columnValues.push(`(${arr.join(", ")})`);
+  });
+
+  if (model === "MULTIPLE_VALUES") {
+    return `INSERT${
+      (replace && " OR REPLACE") || ""
+    } INTO ${table}(${columnNames.join(", ")}) VALUES ${columnValues.join(
+      ", "
+    )};`;
+  } else if (model === "SELECT_FROM") {
+    return `INSERT${
+      (replace && " OR REPLACE") || ""
+    } INTO ${table}(${columnNames.join(", ")}) SELECT ${columnNames
+      .map((item) => `V.${item}`)
+      .join(", ")} FROM (VALUES ${columnValues.join(", ")})V(${columnNames.join(
+      ", "
+    )});`;
+  }
+  return `INSERT${
+    (replace && " OR REPLACE") || ""
+  } INTO ${table}(${columnNames.join(", ")}) SELECT ${columnValues
+    .map((item) => item.replace(/^\(|\)$/g, ""))
+    .join(" UNION ALL SELECT ")}`;
+}
+
 export const utils = {
   mountSelectString,
+  mountMultipleInsertString,
 };

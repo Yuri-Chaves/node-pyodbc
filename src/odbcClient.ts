@@ -5,6 +5,7 @@ import type {
   IDMResult,
   IDelete,
   IInsert,
+  IInsertMultiple,
   IODBCDNSConfig,
   IODBCNoDNSConfig,
   IQuery,
@@ -177,30 +178,29 @@ export class ODBCClient {
   }: IInsert<T>): Promise<IDMResult> {
     let query = "";
     try {
-      if (!Array.isArray(data)) {
-        data = [data];
+      if (Array.isArray(data)) {
+        throw new ODBCError(
+          "If you are trying to insert multiple values, please use `insertMultiple` instead",
+          "INVALID_INPUT"
+        );
       }
-      const columnNames = Object.entries(data[0])
+      const columnNames = Object.entries(data)
         .filter(([_, value]) => value !== undefined)
         .map((value) => {
           return value[0];
         });
       const columnValues: Array<string> = [];
-      data.map((d) => {
-        const arr: Array<string> = [];
-        Object.entries(d)
-          .filter(([_, value]) => value !== undefined)
-          .map((value) => {
-            if (typeof value[1] === "string") {
-              arr.push(`'${value[1]}'`);
-            } else if (typeof value[1] === "object") {
-              arr.push(`'${JSON.stringify(value[1])}'`);
-            } else {
-              arr.push(value[1]);
-            }
-          });
-        columnValues.push(`(${arr.join(", ")})`);
-      });
+      Object.entries(data)
+        .filter(([_, value]) => value !== undefined)
+        .map((value) => {
+          if (typeof value[1] === "string") {
+            columnValues.push(`'${value[1]}'`);
+          } else if (typeof value[1] === "object") {
+            columnValues.push(`'${JSON.stringify(value[1])}'`);
+          } else {
+            columnValues.push(value[1]);
+          }
+        });
       query = `INSERT${
         (replace && " OR REPLACE") || ""
       } INTO ${table}(${columnNames.join(", ")}) VALUES ${columnValues.join(
@@ -213,6 +213,24 @@ export class ODBCClient {
         `${error}`
       );
     }
+
+    return this.query({ query, database });
+  }
+
+  async insertMultiple<T extends object>({
+    data,
+    table,
+    database,
+    model = "MULTIPLE_VALUES",
+    replace,
+  }: IInsertMultiple<T>) {
+    if (!Array.isArray(data)) {
+      throw new ODBCError(
+        "If you are not trying to insert multiple values, please use `insert` instead",
+        "INVALID_INPUT"
+      );
+    }
+    const query = utils.mountMultipleInsertString(table, data, model, replace);
 
     return this.query({ query, database });
   }
