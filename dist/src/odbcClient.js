@@ -18,7 +18,7 @@ const node_path_1 = __importDefault(require("node:path"));
 const odbcError_1 = require("./odbcError");
 const odbcUtils_1 = require("./odbcUtils");
 class ODBCClient {
-    constructor(connectionConfig, pythonPath = 'python3') {
+    constructor(connectionConfig, pythonPath = "python3") {
         this.config = connectionConfig;
         this.pythonPath = pythonPath;
     }
@@ -26,9 +26,9 @@ class ODBCClient {
         return __awaiter(this, arguments, void 0, function* ({ query, database }) {
             try {
                 const data = yield new Promise((resolve, reject) => {
-                    const queryScript = node_path_1.default.join(__dirname, '..', '..', 'python', 'query.py');
+                    const queryScript = node_path_1.default.join(__dirname, "..", "..", "python", "query.py");
                     let args;
-                    if ('dns' in this.config) {
+                    if ("dns" in this.config) {
                         args = {
                             connectionString: `DNS=${this.config.dns};UID=${this.config.user};PWD=${this.config.password};`,
                             query,
@@ -40,19 +40,19 @@ class ODBCClient {
                             query,
                         };
                     }
-                    let output = '';
-                    let err = '';
+                    let output = "";
+                    let err = "";
                     const process = (0, node_child_process_1.spawn)(this.pythonPath, [queryScript]);
                     process.stdin.write(JSON.stringify(args));
                     process.stdin.end();
-                    process.stdout.on('data', chunk => {
+                    process.stdout.on("data", (chunk) => {
                         output += chunk.toString();
                     });
-                    process.stderr.on('data', chunk => {
-                        console.error('stderr', chunk.toString());
+                    process.stderr.on("data", (chunk) => {
+                        console.error("stderr", chunk.toString());
                         err += chunk.toString();
                     });
-                    process.on('close', code => {
+                    process.on("close", (code) => {
                         if (code !== 0) {
                             if (err) {
                                 reject(new Error(err));
@@ -73,7 +73,7 @@ class ODBCClient {
                             resolve(result);
                         }
                         catch (err) {
-                            reject(new odbcError_1.ODBCError('Invalid JSON output from query', 'INVALID_OUTPUT', `${err}`, query));
+                            reject(new odbcError_1.ODBCError("Invalid JSON output from query", "INVALID_OUTPUT", `${err}`, query));
                         }
                     });
                 });
@@ -88,20 +88,23 @@ class ODBCClient {
         });
     }
     select(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ columns, table, database, where, join, options }) {
+        return __awaiter(this, arguments, void 0, function* ({ columns, table, database, where, join, options, }) {
             let query = "SELECT ";
             if (join) {
                 query += odbcUtils_1.utils.mountSelectString(columns, table);
                 if (join.columns) {
                     query += `, ${odbcUtils_1.utils.mountSelectString(join.columns, join.table)}`;
                 }
-                query += ` FROM ${table} ${join.type || 'INNER'} JOIN ${join.table} ON ${table}.${join.on.columnA.toString()} = ${join.table}.${join.on.columnB.toString()}`;
+                query += ` FROM ${table} ${join.type || "INNER"} JOIN ${join.table} ON ${table}.${join.on.columnA.toString()} = ${join.table}.${join.on.columnB.toString()}`;
             }
             else {
                 query += `${odbcUtils_1.utils.mountSelectString(columns, table)} FROM ${table}`;
             }
             if (where) {
-                query += ` WHERE ${where.split(' ').filter(word => word.toLowerCase() !== 'where').join(' ')}`;
+                query += ` WHERE ${where
+                    .split(" ")
+                    .filter((word) => word.toLowerCase() !== "where")
+                    .join(" ")}`;
             }
             if (options === null || options === void 0 ? void 0 : options.limit) {
                 query += ` LIMIT ${options.limit}`;
@@ -116,32 +119,32 @@ class ODBCClient {
         });
     }
     insert(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ data, database, table, replace = false }) {
-            let query = '';
+        return __awaiter(this, arguments, void 0, function* ({ data, database, table, replace = false, }) {
+            let query = "";
             try {
-                if (!Array.isArray(data)) {
-                    data = [data];
+                if (Array.isArray(data)) {
+                    throw new odbcError_1.ODBCError("If you are trying to insert multiple values, please use `insertMultiple` instead", "INVALID_INPUT");
                 }
-                const columnNames = Object.entries(data[0]).filter(([_, value]) => value !== undefined).map(value => {
+                const columnNames = Object.entries(data)
+                    .filter(([_, value]) => value !== undefined)
+                    .map((value) => {
                     return value[0];
                 });
                 const columnValues = [];
-                data.map(d => {
-                    const arr = [];
-                    Object.entries(d).filter(([_, value]) => value !== undefined).map(value => {
-                        if (typeof value[1] === 'string') {
-                            arr.push(`'${value[1]}'`);
-                        }
-                        else if (typeof value[1] === 'object') {
-                            arr.push(`'${JSON.stringify(value[1])}'`);
-                        }
-                        else {
-                            arr.push(value[1]);
-                        }
-                    });
-                    columnValues.push(`(${arr.join(', ')})`);
+                Object.entries(data)
+                    .filter(([_, value]) => value !== undefined)
+                    .map((value) => {
+                    if (typeof value[1] === "string") {
+                        columnValues.push(`'${value[1]}'`);
+                    }
+                    else if (typeof value[1] === "object") {
+                        columnValues.push(`'${JSON.stringify(value[1])}'`);
+                    }
+                    else {
+                        columnValues.push(value[1]);
+                    }
                 });
-                query = `INSERT${replace && ' OR REPLACE' || ''} INTO ${table}(${columnNames.join(', ')}) VALUES ${columnValues.join(', ')};`;
+                query = `INSERT${(replace && " OR REPLACE") || ""} INTO ${table}(${columnNames.join(", ")}) VALUES ${columnValues.join(", ")};`;
             }
             catch (error) {
                 throw new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
@@ -149,24 +152,36 @@ class ODBCClient {
             return this.query({ query, database });
         });
     }
+    insertMultiple(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ data, table, database, model = "MULTIPLE_VALUES", replace, }) {
+            if (!Array.isArray(data)) {
+                throw new odbcError_1.ODBCError("If you are not trying to insert multiple values, please use `insert` instead", "INVALID_INPUT");
+            }
+            const query = odbcUtils_1.utils.mountMultipleInsertString(table, data, model, replace);
+            return this.query({ query, database });
+        });
+    }
     update(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ data, table, database, where }) {
-            let query = '';
+        return __awaiter(this, arguments, void 0, function* ({ data, table, database, where, }) {
+            let query = "";
             try {
-                const setString = Object.entries(data).filter(([_, value]) => value !== undefined).map(value => {
+                const setString = Object.entries(data)
+                    .filter(([_, value]) => value !== undefined)
+                    .map((value) => {
                     let str = "";
-                    if (typeof value[1] === 'string') {
+                    if (typeof value[1] === "string") {
                         str = `${value[0]} = '${value[1]}'`;
                     }
-                    else if (typeof value[1] === 'object') {
+                    else if (typeof value[1] === "object") {
                         str = `${value[0]} = '${JSON.stringify(value[1])}'`;
                     }
                     else {
                         str = `${value[0]} = ${value[1]}`;
                     }
                     return str;
-                }).join(', ');
-                query = `UPDATE ${table} SET ${setString}${where && ` WHERE ${where}` || ''}`;
+                })
+                    .join(", ");
+                query = `UPDATE ${table} SET ${setString}${(where && ` WHERE ${where}`) || ""}`;
             }
             catch (error) {
                 throw new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
@@ -176,9 +191,9 @@ class ODBCClient {
     }
     delete(_a) {
         return __awaiter(this, arguments, void 0, function* ({ table, database, where }) {
-            let query = '';
+            let query = "";
             try {
-                query = `DELETE FROM ${table}${where && ` WHERE ${where}` || ''};`;
+                query = `DELETE FROM ${table}${(where && ` WHERE ${where}`) || ""};`;
             }
             catch (error) {
                 throw new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
@@ -188,22 +203,22 @@ class ODBCClient {
     }
     aggregateFunction(_a) {
         return __awaiter(this, arguments, void 0, function* ({ fn, column, table, database, where, groupBy, alias, distinct, expression, }) {
-            let query = '';
+            let query = "";
             try {
-                query += 'SELECT ';
+                query += "SELECT ";
                 query += fn;
-                query += distinct && fn === 'COUNT' ? ' (DISTINCT ' : ' (';
+                query += distinct && fn === "COUNT" ? " (DISTINCT " : " (";
                 query += column.toString();
-                query += expression && fn === 'SUM' ? ` ${expression}` : '';
-                query += alias ? `) AS ${alias}` : ')';
-                query += groupBy ? `, ${groupBy.join(', ').toString()}` : '';
+                query += expression && fn === "SUM" ? ` ${expression}` : "";
+                query += alias ? `) AS ${alias}` : ")";
+                query += groupBy ? `, ${groupBy.join(", ").toString()}` : "";
                 query += ` FROM ${table}`;
-                query += where ? ` WHERE ${where}` : '';
-                query += groupBy ? ` GROUP BY ${groupBy.join(', ').toString()}` : '';
-                query += ';';
+                query += where ? ` WHERE ${where}` : "";
+                query += groupBy ? ` GROUP BY ${groupBy.join(", ").toString()}` : "";
+                query += ";";
             }
             catch (error) {
-                throw new odbcError_1.ODBCError('Error while creating the query', 'INVALID_INPUT', `${error}`, query);
+                throw new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`, query);
             }
             return this.query({ query, database });
         });

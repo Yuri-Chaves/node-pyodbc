@@ -18,8 +18,9 @@ interface IBase {
     table: string;
     database?: string;
 }
+export type TInsertMultipleModel = "MULTIPLE_VALUES" | "SELECT_FROM" | "UNION_ALL";
 export interface ISelect<TTableA extends object, TTableB extends object> extends IBase {
-    columns: Array<{} extends TTableA ? string : keyof TTableA> | '*';
+    columns: Array<{} extends TTableA ? string : keyof TTableA> | "*";
     /**
      * @note 🗒️ If you are joining tables, you need to specify the table name of the column
      * @example If `table: "users"` then use `where: "where users.name"` or just `where: "users.name"`
@@ -31,7 +32,7 @@ export interface ISelect<TTableA extends object, TTableB extends object> extends
             columnA: {} extends TTableA ? string : keyof TTableA;
             columnB: {} extends TTableB ? string : keyof TTableB;
         };
-        columns?: Array<{} extends TTableB ? string : keyof TTableB> | '*';
+        columns?: Array<{} extends TTableB ? string : keyof TTableB> | "*";
         type?: "INNER" | "LEFT" | "RIGHT";
     };
     options?: {
@@ -53,12 +54,24 @@ export interface IDMResult {
     details: string;
 }
 export interface IInsert<T extends object> extends IBase {
+    data: T;
+    replace?: boolean;
+}
+export interface IInsertMultiple<T extends object> extends IBase {
+    data: Array<T>;
     /**
-     * @warning ⚠️ If you are trying to use `data` as an Array, make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts the syntax for multiple inserts:
-     *
-     * `INSERT INTO <table> (<columns>) VALUES (...), (...), ...;`
+     * @default "MULTIPLE_VALUES"
+     * @description `MULTIPLE_VALUES` - SQL Server 2008 and later based. **limited** to `1000 records`
+     * @description `SELECT_FROM` - MULTIPLE_VALUES *workaround* for more than `1000 records`
+     * @description `UNION_ALL` - SQL Server 2005 and later based
+     * @warning ⚠️ Make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts this syntax.
+     * @param "MULTIPLE_VALUES" - `INSERT INTO <table> (<columns>) VALUES (...), (...), ...;`
+     * @warning ⚠️ Make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts **"MULTIPLE_VALUES"** syntax.
+     * @param "SELECT_FROM" - `INSERT INTO <table> (<columnA>, <columnA>, ...) SELECT V.<columnA>, V.<columnB>,... FROM (VALUES(<valueA>, <valueB>,...), (<valueA>, <valueB>,...), ..., (<valueA>, <valueB>,...)V(<columnA>, <columnB> ...));`
+     * @warning ⚠️ Make sure your [DBMS](https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/) accepts this syntax.
+     * @param "UNION_ALL" - `INSERT INTO <table> (<columns>) SELECT <values> UNION ALL SELECT <values> UNION ALL ... UNION ALL SELECT <values>;`
      */
-    data: T | Array<T>;
+    model?: TInsertMultipleModel;
     replace?: boolean;
 }
 export interface IUpdate<T extends object> extends IBase {
@@ -74,13 +87,13 @@ export interface IDelete extends IBase {
      */
     where?: string;
 }
-export type TAggregateFunctions = 'MIN' | 'MAX' | 'COUNT' | 'SUM' | 'AVG';
+export type TAggregateFunctions = "MIN" | "MAX" | "COUNT" | "SUM" | "AVG";
 export interface IAggregateFunctions<T extends object> extends IBase {
     fn: TAggregateFunctions;
     /**
      * @note 🗒️ `column: '*'` is used just if `fn` = **COUNT**
      */
-    column: {} extends T ? string : keyof T | '*';
+    column: {} extends T ? string : keyof T | "*";
     where?: string;
     groupBy?: Array<{} extends T ? string : keyof T>;
     alias?: string;
