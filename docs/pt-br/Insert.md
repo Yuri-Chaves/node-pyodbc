@@ -15,15 +15,16 @@ const data = await odbcClient.insert<Table>({
   data: {
     id: 1,
     name: 'John Doe'
-  }, // caso deseje inserir múltiplos registros (array), verifique se o DBMS aceita a sintaxe `INSERT INTO <table> (<columns>) VALUES (...), (...), ...;`
+  }, // caso deseje inserir múltiplos registros (array), utilize o método [insertMultiple](https://github.com/Yuri-Chaves/node-pyodbc/blob/main/docs/pt-br/InsertMultiple.md)
 })
 ```
 
 retorna um objeto do tipo
+
 ```typescript
 type InsertReturn = {
-  code: TODBCErrorCode | 'SUCCESS'
-  message: string
-  details: string
-}
+  code: TODBCErrorCode | "SUCCESS";
+  message: string;
+  details: string;
+};
 ```
