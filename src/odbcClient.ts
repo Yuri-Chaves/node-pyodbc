@@ -203,9 +203,9 @@ export class ODBCClient {
         });
       query = `INSERT${
         (replace && " OR REPLACE") || ""
-      } INTO ${table}(${columnNames.join(", ")}) VALUES ${columnValues.join(
+      } INTO ${table}(${columnNames.join(", ")}) VALUES (${columnValues.join(
         ", "
-      )};`;
+      )});`;
     } catch (error) {
       throw new ODBCError(
         "Error while creating the query",

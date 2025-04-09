@@ -144,7 +144,7 @@ class ODBCClient {
                         columnValues.push(value[1]);
                     }
                 });
-                query = `INSERT${(replace && " OR REPLACE") || ""} INTO ${table}(${columnNames.join(", ")}) VALUES ${columnValues.join(", ")};`;
+                query = `INSERT${(replace && " OR REPLACE") || ""} INTO ${table}(${columnNames.join(", ")}) VALUES (${columnValues.join(", ")});`;
             }
             catch (error) {
                 throw new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`);
