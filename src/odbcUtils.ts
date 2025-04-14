@@ -1,4 +1,4 @@
-import { TInsertMultipleModel } from "./interfaces";
+import { TInsertMultipleModel, TJoinOn } from "./interfaces";
 
 function mountSelectString(columns: Array<any> | string, prefix?: string) {
   let selectString: string;
@@ -11,6 +11,24 @@ function mountSelectString(columns: Array<any> | string, prefix?: string) {
     selectString = `${_prefix}${columns}`;
   }
   return selectString;
+}
+
+function mountOnString<TTableA extends object, TTableB extends object>(
+  condition: TJoinOn<TTableA, TTableB>,
+  prefixA: string,
+  prefixB: string
+): string {
+  if (!condition) {
+    return "";
+  }
+  if (!Array.isArray(condition)) {
+    const operator = condition.operator || "=";
+    return `${prefixA}.${condition.columnA} ${operator} ${prefixB}.${condition.columnB}`;
+  }
+  const [clause, conditions] = condition;
+  return `( ${conditions
+    .map((con) => mountOnString(con, prefixA, prefixB))
+    .join(`) ${clause} (`)} )`;
 }
 
 function mountMultipleInsertString(
@@ -66,5 +84,6 @@ function mountMultipleInsertString(
 
 export const utils = {
   mountSelectString,
+  mountOnString,
   mountMultipleInsertString,
 };

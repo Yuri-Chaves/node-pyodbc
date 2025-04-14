@@ -95,7 +95,8 @@ class ODBCClient {
                 if (join.columns) {
                     query += `, ${odbcUtils_1.utils.mountSelectString(join.columns, join.table)}`;
                 }
-                query += ` FROM ${table} ${join.type || "INNER"} JOIN ${join.table} ON ${table}.${join.on.columnA.toString()} = ${join.table}.${join.on.columnB.toString()}`;
+                query += ` FROM ${table} ${join.type || "INNER"} JOIN ${join.database ? join.database + ":" : ""}${join.table} ON `;
+                query += odbcUtils_1.utils.mountOnString(join.on, table, join.table);
             }
             else {
                 query += `${odbcUtils_1.utils.mountSelectString(columns, table)} FROM ${table}`;

@@ -14,6 +14,19 @@ function mountSelectString(columns, prefix) {
     }
     return selectString;
 }
+function mountOnString(condition, prefixA, prefixB) {
+    if (!condition) {
+        return "";
+    }
+    if (!Array.isArray(condition)) {
+        const operator = condition.operator || "=";
+        return `${prefixA}.${condition.columnA} ${operator} ${prefixB}.${condition.columnB}`;
+    }
+    const [clause, conditions] = condition;
+    return `( ${conditions
+        .map((con) => mountOnString(con, prefixA, prefixB))
+        .join(`) ${clause} (`)} )`;
+}
 function mountMultipleInsertString(table, data, model, replace = false) {
     const columnNames = Object.entries(data[0])
         .filter(([_, value]) => value !== undefined)
@@ -52,6 +65,7 @@ function mountMultipleInsertString(table, data, model, replace = false) {
 }
 exports.utils = {
     mountSelectString,
+    mountOnString,
     mountMultipleInsertString,
 };
 //# sourceMappingURL=odbcUtils.js.map

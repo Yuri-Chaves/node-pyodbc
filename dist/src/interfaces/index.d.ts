@@ -19,6 +19,13 @@ interface IBase {
     database?: string;
 }
 export type TInsertMultipleModel = "MULTIPLE_VALUES" | "SELECT_FROM" | "UNION_ALL";
+type TClauses = "AND" | "OR";
+type TJoinConditions<TTableA extends object, TTableB extends object> = {
+    columnA: {} extends TTableA ? string : Extract<keyof TTableA, string>;
+    operator?: "=" | "<>" | ">" | "<" | ">=" | "<=" | "LIKE" | "IN" | "BETWEEN";
+    columnB: {} extends TTableB ? string : Extract<keyof TTableB, string>;
+};
+export type TJoinOn<TTableA extends object = {}, TTableB extends object = {}> = TJoinConditions<TTableA, TTableB> | [TClauses, Array<TJoinConditions<TTableA, TTableB>>] | [TClauses, Array<TJoinOn<TTableA, TTableB>>];
 export interface ISelect<TTableA extends object, TTableB extends object> extends IBase {
     columns: Array<{} extends TTableA ? string : keyof TTableA> | "*";
     /**
@@ -28,12 +35,10 @@ export interface ISelect<TTableA extends object, TTableB extends object> extends
     where?: string;
     join?: {
         table: string;
-        on: {
-            columnA: {} extends TTableA ? string : keyof TTableA;
-            columnB: {} extends TTableB ? string : keyof TTableB;
-        };
+        on: TJoinOn<TTableA, TTableB>;
         columns?: Array<{} extends TTableB ? string : keyof TTableB> | "*";
         type?: "INNER" | "LEFT" | "RIGHT";
+        database?: string;
     };
     options?: {
         limit?: number;

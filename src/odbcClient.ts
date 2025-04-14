@@ -145,10 +145,9 @@ export class ODBCClient {
         query += `, ${utils.mountSelectString(join.columns, join.table)}`;
       }
       query += ` FROM ${table} ${join.type || "INNER"} JOIN ${
-        join.table
-      } ON ${table}.${join.on.columnA.toString()} = ${
-        join.table
-      }.${join.on.columnB.toString()}`;
+        join.database ? join.database + ":" : ""
+      }${join.table} ON `;
+      query += utils.mountOnString(join.on, table, join.table);
     } else {
       query += `${utils.mountSelectString(columns, table)} FROM ${table}`;
     }
