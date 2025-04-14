@@ -22,7 +22,7 @@ export type TInsertMultipleModel = "MULTIPLE_VALUES" | "SELECT_FROM" | "UNION_AL
 type TClauses = "AND" | "OR";
 type TJoinConditions<TTableA extends object, TTableB extends object> = {
     columnA: {} extends TTableA ? string : Extract<keyof TTableA, string>;
-    operator?: "=" | "<>" | ">" | "<" | ">=" | "<=" | "LIKE" | "IN" | "BETWEEN";
+    operator?: "=" | "<>" | ">" | "<" | ">=" | "<=";
     columnB: {} extends TTableB ? string : Extract<keyof TTableB, string>;
 };
 export type TJoinOn<TTableA extends object = {}, TTableB extends object = {}> = TJoinConditions<TTableA, TTableB> | [TClauses, Array<TJoinConditions<TTableA, TTableB>>] | [TClauses, Array<TJoinOn<TTableA, TTableB>>];
