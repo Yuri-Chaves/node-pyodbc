@@ -47,6 +47,13 @@ def fetch(connectionString, query):
         "details": str(ex)
       }), flush=True)
       sys.exit(1)
+    if "unique key violation" in str(ex):
+      print(json.dumps({
+        "code": "UNIQUE_KEY_VIOLATION",
+        "message": "Unique key violation",
+        "details": str(ex)
+      }), flush=True)
+      sys.exit(1)
     print(json.dumps({
       "code": "QUERY_EXECUTION_ERROR",
       "message": "Error while processing query",
