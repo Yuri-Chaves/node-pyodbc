@@ -112,5 +112,5 @@ export interface IAggregateFunctions<T extends object> extends IBase {
      */
     expression?: string;
 }
-export type TODBCErrorCode = "QUERY_EXECUTION_ERROR" | "INVALID_OUTPUT" | "INVALID_INPUT" | "NUMBER_OF_CONNECTIONS" | "UNEXPECTED_ERROR";
+export type TODBCErrorCode = "QUERY_EXECUTION_ERROR" | "UNIQUE_KEY_VIOLATION" | "INVALID_OUTPUT" | "INVALID_INPUT" | "NUMBER_OF_CONNECTIONS" | "UNEXPECTED_ERROR";
 export {};
