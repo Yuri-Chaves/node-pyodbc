@@ -38,9 +38,11 @@ export type TJoinOn<TTableA extends object = {}, TTableB extends object = {}> =
   | [TClauses, Array<TJoinConditions<TTableA, TTableB>>]
   | [TClauses, Array<TJoinOn<TTableA, TTableB>>];
 
+export type TKeyOfValue<T> = {} extends T ? string : keyof T;
+
 export interface ISelect<TTableA extends object, TTableB extends object>
   extends IBase {
-  columns: Array<{} extends TTableA ? string : keyof TTableA> | "*";
+  columns: Array<TKeyOfValue<TTableA>> | "*";
   /**
    * @note 🗒️ If you are joining tables, you need to specify the table name of the column
    * @example If `table: "users"` then use `where: "where users.name"` or just `where: "users.name"`
@@ -49,7 +51,7 @@ export interface ISelect<TTableA extends object, TTableB extends object>
   join?: {
     table: string;
     on: TJoinOn<TTableA, TTableB>;
-    columns?: Array<{} extends TTableB ? string : keyof TTableB> | "*";
+    columns?: Array<TKeyOfValue<TTableB>> | "*";
     type?: "INNER" | "LEFT" | "RIGHT";
     database?: string;
   };
@@ -118,9 +120,9 @@ export interface IAggregateFunctions<T extends object> extends IBase {
   /**
    * @note 🗒️ `column: '*'` is used just if `fn` = **COUNT**
    */
-  column: {} extends T ? string : keyof T | "*";
+  column: TKeyOfValue<T> | "*";
   where?: string;
-  groupBy?: Array<{} extends T ? string : keyof T>;
+  groupBy?: Array<TKeyOfValue<T>>;
   alias?: string;
   /**
    * @description If **distinct** is true, rows with the same value for the specified column will be counted as one
@@ -133,10 +135,84 @@ export interface IAggregateFunctions<T extends object> extends IBase {
   expression?: string;
 }
 
+export interface IPaginatedResponse<T extends object> {
+  meta: {
+    /**
+     * @description Total number of records in the table matching the `WHERE` clause
+     */
+    total: number;
+    /**
+     * @description Number of records per page
+     */
+    perPage: number;
+    /**
+     * @description Length of the current page
+     */
+    dataLength: number;
+    /**
+     * @description Last page number
+     */
+    lastPage: number;
+    /**
+     * @description URL to the next page
+     * @example `?page=2`
+     */
+    nextPageUrl: string | null;
+    /**
+     * @description URL to the previous page
+     * @example `?page=1`
+     */
+    previousPageUrl: string | null;
+    /**
+     * @description Current page number
+     */
+    currentPage: number;
+    /**
+     * @description Whether there is a next page
+     */
+    hasNextPage: boolean;
+    /**
+     * @description Whether there is a previous page
+     */
+    hasPreviousPage: boolean;
+  };
+  data: Array<T>;
+}
+
+export interface IPaginated<
+  TTableA extends object = {},
+  TTableB extends object = {}
+> extends Omit<ISelect<TTableA, TTableB>, "join" | "options"> {
+  /**
+   * @description Page number
+   * @default 1
+   */
+  page?: number;
+  /**
+   * @description Number of records per page
+   * @default 25
+   */
+  perPage?: number;
+  /**
+   * @description Exception message to be thrown when the page number is greater than the total number of pages
+   * @default "Page not found"
+   */
+  totalPagesError?: string;
+  order?: {
+    /**
+     * @note 🗒️ If you are joining tables, you need to specify the table name of the column
+     * @example If `table: "users"` then use `order.columns: ["users.name"]`
+     */
+    columns: Array<string>;
+    direction: "ASC" | "DESC";
+  };
+}
+
 export type TODBCErrorCode =
   | "QUERY_EXECUTION_ERROR"
   | "UNIQUE_KEY_VIOLATION"
   | "INVALID_OUTPUT"
   | "INVALID_INPUT"
   | "NUMBER_OF_CONNECTIONS"
-  | "UNEXPECTED_ERROR";
+  | "UNEXPECTED_ERROR"
+  | "INDEX_OUT_OF_RANGE";

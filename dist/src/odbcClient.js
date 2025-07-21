@@ -8,6 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -107,14 +118,14 @@ class ODBCClient {
                     .filter((word) => word.toLowerCase() !== "where")
                     .join(" ")}`;
             }
+            if (options === null || options === void 0 ? void 0 : options.order) {
+                query += ` ORDER BY ${options.order.columns} ${options.order.direction}`;
+            }
             if (options === null || options === void 0 ? void 0 : options.limit) {
                 query += ` LIMIT ${options.limit}`;
             }
             if (options === null || options === void 0 ? void 0 : options.offset) {
                 query += ` OFFSET ${options.offset}`;
-            }
-            if (options === null || options === void 0 ? void 0 : options.order) {
-                query += ` ORDER BY ${options.order.columns} ${options.order.direction}`;
             }
             return this.query({ query, database });
         });
@@ -222,6 +233,77 @@ class ODBCClient {
                 throw new odbcError_1.ODBCError("Error while creating the query", "INVALID_INPUT", `${error}`, query);
             }
             return this.query({ query, database });
+        });
+    }
+    getPaginated(_a) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var { page = 1, perPage = 25, totalPagesError = "Page not found", order } = _a, rest = __rest(_a, ["page", "perPage", "totalPagesError", "order"]);
+            if (page < 1) {
+                throw new odbcError_1.ODBCError("Page number must be greater than 0", "INVALID_INPUT");
+            }
+            const offset = (page - 1) * perPage;
+            const count = yield this.aggregateFunction({
+                column: "*",
+                fn: "COUNT",
+                table: rest.table,
+                database: rest.database,
+                where: rest.where,
+                alias: "COUNT",
+            }).then((result) => result.COUNT);
+            const totalPages = Math.ceil(count / perPage);
+            if (page > totalPages) {
+                if (totalPages === 0) {
+                    return {
+                        meta: {
+                            currentPage: page,
+                            dataLength: 0,
+                            hasNextPage: false,
+                            hasPreviousPage: false,
+                            lastPage: totalPages,
+                            nextPageUrl: null,
+                            perPage: perPage,
+                            previousPageUrl: null,
+                            total: count,
+                        },
+                        data: [],
+                    };
+                }
+                throw new odbcError_1.ODBCError(totalPagesError, "INDEX_OUT_OF_RANGE");
+            }
+            const items = yield this.select({
+                columns: rest.columns,
+                database: rest.database,
+                table: rest.table,
+                where: rest.where,
+                options: {
+                    limit: perPage,
+                    offset,
+                    order,
+                },
+            }).then((result) => {
+                if (!result)
+                    return [];
+                if (Array.isArray(result)) {
+                    return result;
+                }
+                return [result];
+            });
+            const hasNextPage = +page < totalPages;
+            const hasPreviousPage = +page > 1;
+            return {
+                meta: {
+                    currentPage: page,
+                    dataLength: items.length,
+                    hasNextPage,
+                    hasPreviousPage,
+                    lastPage: totalPages,
+                    nextPageUrl: hasNextPage ? `?page=${+page + 1}` : null,
+                    perPage,
+                    previousPageUrl: hasPreviousPage ? `?page=${+page - 1}` : null,
+                    total: count,
+                },
+                data: items,
+            };
         });
     }
 }

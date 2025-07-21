@@ -8,9 +8,12 @@ import type {
   IInsertMultiple,
   IODBCDNSConfig,
   IODBCNoDNSConfig,
+  IPaginated,
+  IPaginatedResponse,
   IQuery,
   ISelect,
   IUpdate,
+  TKeyOfValue,
   TODBCErrorCode,
 } from "./interfaces";
 import { ODBCError } from "./odbcError";
@@ -157,14 +160,14 @@ export class ODBCClient {
         .filter((word) => word.toLowerCase() !== "where")
         .join(" ")}`;
     }
+    if (options?.order) {
+      query += ` ORDER BY ${options.order.columns} ${options.order.direction}`;
+    }
     if (options?.limit) {
       query += ` LIMIT ${options.limit}`;
     }
     if (options?.offset) {
       query += ` OFFSET ${options.offset}`;
-    }
-    if (options?.order) {
-      query += ` ORDER BY ${options.order.columns} ${options.order.direction}`;
     }
 
     return this.query({ query, database });
@@ -317,5 +320,92 @@ export class ODBCClient {
     }
 
     return this.query({ query, database });
+  }
+
+  async getPaginated<
+    TResult extends object = {},
+    TTableA extends object = {},
+    TTableB extends object = {}
+  >({
+    page = 1,
+    perPage = 25,
+    totalPagesError = "Page not found",
+    order,
+    ...rest
+  }: IPaginated): Promise<IPaginatedResponse<TResult>> {
+    if (page < 1) {
+      throw new ODBCError(
+        "Page number must be greater than 0",
+        "INVALID_INPUT"
+      );
+    }
+    const offset = (page - 1) * perPage;
+
+    const count = await this.aggregateFunction<{}, { COUNT: number }>({
+      column: "*",
+      fn: "COUNT",
+      table: rest.table,
+      database: rest.database,
+      where: rest.where,
+      alias: "COUNT",
+    }).then((result) => result.COUNT);
+
+    const totalPages = Math.ceil(count / perPage);
+
+    if (page > totalPages) {
+      if (totalPages === 0) {
+        return {
+          meta: {
+            currentPage: page,
+            dataLength: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+            lastPage: totalPages,
+            nextPageUrl: null,
+            perPage: perPage,
+            previousPageUrl: null,
+            total: count,
+          },
+          data: [],
+        };
+      }
+      throw new ODBCError(totalPagesError, "INDEX_OUT_OF_RANGE");
+    }
+
+    const items = await this.select<TTableA, TTableB, TResult>({
+      columns: rest.columns as Array<TKeyOfValue<TTableA>> | "*",
+      database: rest.database,
+      table: rest.table,
+      where: rest.where,
+      options: {
+        limit: perPage,
+        offset,
+        order,
+      },
+    }).then((result) => {
+      if (!result) return [];
+      if (Array.isArray(result)) {
+        return result;
+      }
+      return [result];
+    });
+
+    const hasNextPage = +page < totalPages;
+    const hasPreviousPage = +page > 1;
+
+    return {
+      meta: {
+        currentPage: page,
+        dataLength: items.length,
+        hasNextPage,
+        hasPreviousPage,
+        lastPage: totalPages,
+        nextPageUrl: hasNextPage ? `?page=${+page + 1}` : null,
+        perPage,
+        previousPageUrl: hasPreviousPage ? `?page=${+page - 1}` : null,
+        total: count,
+      },
+      data: items,
+    };
   }
 }
