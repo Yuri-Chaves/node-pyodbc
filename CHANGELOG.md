@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The library syntax will be updated to use a **builder pattern**.
   The current object-based syntax will be **deprecated and removed** in a future release.
 
+## [0.6.2] - 2025-09-02
+
+### Fixed
+
+- Partial revert of 0.6.1 changes to fix `Object of type [...] is not JSON serializable` error.
+
 ## [0.6.1] - 2025-09-02
 
 ### Fixed
