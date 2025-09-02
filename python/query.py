@@ -20,16 +20,15 @@ def fetch(connectionString, query):
       sys.exit(0)
     rows = cursor.fetchall()
     conn.close()
-    columns = [column[0] for column in cursor.description]
     result = []
     for row in rows:
-      row_dict = {}
-      for key, value in zip(columns, row):
+      row_dict = dict(zip([column[0] for column in cursor.description], row))
+      for key, value in row_dict.items():
         if isinstance(value, date):
           row_dict[key] = value.strftime('%Y-%m-%d')
         elif isinstance(value, time):
           row_dict[key] = value.strftime('%H:%M:%S')
-        elif isinstance(value, (Decimal, int)):
+        elif isinstance(value, Decimal):
           row_dict[key] = float(value)
         elif isinstance(value, str):
           val_strip = value.strip()
@@ -39,9 +38,6 @@ def fetch(connectionString, query):
               row_dict[key] = json_value
             except json.JSONDecodeError:
               pass
-          else:
-            row_dict[key] = value
-        row_dict[key] = value
       result.append(row_dict)
 
     print(json.dumps(result, ensure_ascii=False))
