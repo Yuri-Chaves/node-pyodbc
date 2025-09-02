@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Error while processing numerical strings, now it will keep the string as it is.
+
+### Breaking changes (upcoming)
+
+- The library syntax will be updated to use a **builder pattern**.
+  The current object-based syntax will be **deprecated and removed** in a future release.
+
 ## [0.6.0] - 2025-07-21
 
 ### Added
