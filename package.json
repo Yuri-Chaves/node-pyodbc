@@ -1,6 +1,6 @@
 {
   "name": "node-pyodbc",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "An asynchronous interface to unixODBC",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
