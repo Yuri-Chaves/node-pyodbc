@@ -94,14 +94,24 @@ export interface IDelete extends IBase {
     where?: string;
 }
 export type TAggregateFunctions = "MIN" | "MAX" | "COUNT" | "SUM" | "AVG";
-export interface IAggregateFunctions<T extends object> extends IBase {
+export interface IAggregateFunctions<TTableA extends object, TTableB extends object> extends IBase {
     fn: TAggregateFunctions;
     /**
      * @note 🗒️ `column: '*'` is used just if `fn` = **COUNT**
      */
-    column: TKeyOfValue<T> | "*";
+    column: TKeyOfValue<TTableA> | "*";
     where?: string;
-    groupBy?: Array<TKeyOfValue<T>>;
+    /**
+     * @note ⚠️ Joins may introduce duplicate rows, which can affect aggregate results.
+     */
+    join?: {
+        table: string;
+        on: TJoinOn<TTableA, TTableB>;
+        columns?: Array<TKeyOfValue<TTableB>> | "*";
+        type?: "INNER" | "LEFT" | "RIGHT";
+        database?: string;
+    };
+    groupBy?: Array<string>;
     alias?: string;
     /**
      * @description If **distinct** is true, rows with the same value for the specified column will be counted as one

@@ -214,17 +214,31 @@ class ODBCClient {
         });
     }
     aggregateFunction(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ fn, column, table, database, where, groupBy, alias, distinct, expression, }) {
+        return __awaiter(this, arguments, void 0, function* ({ fn, column, table, database, where, groupBy, alias, distinct, expression, join, }) {
             let query = "";
             try {
                 query += "SELECT ";
                 query += fn;
                 query += distinct && fn === "COUNT" ? " (DISTINCT " : " (";
-                query += column.toString();
-                query += expression && fn === "SUM" ? ` ${expression}` : "";
-                query += alias ? `) AS ${alias}` : ")";
-                query += groupBy ? `, ${groupBy.join(", ").toString()}` : "";
-                query += ` FROM ${table}`;
+                if (join) {
+                    query +=
+                        column === "*"
+                            ? "*"
+                            : odbcUtils_1.utils.mountSelectString(column, table);
+                    if (join.columns) {
+                        query += `, ${odbcUtils_1.utils.mountSelectString(join.columns, join.table)}`;
+                    }
+                    query += expression && fn === "SUM" ? ` ${expression}` : "";
+                    query += alias ? `) AS ${alias}` : ")";
+                    query += ` FROM ${table} ${join.type || "INNER"} JOIN ${join.database ? join.database + ":" : ""}${join.table} ON `;
+                    query += odbcUtils_1.utils.mountOnString(join.on, table, join.table);
+                }
+                else {
+                    query += column.toString();
+                    query += expression && fn === "SUM" ? ` ${expression}` : "";
+                    query += alias ? `) AS ${alias}` : ")";
+                    query += ` FROM ${table}`;
+                }
                 query += where ? ` WHERE ${where}` : "";
                 query += groupBy ? ` GROUP BY ${groupBy.join(", ").toString()}` : "";
                 query += ";";

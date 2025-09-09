@@ -286,7 +286,11 @@ export class ODBCClient {
     return this.query({ query, database });
   }
 
-  async aggregateFunction<T extends object = {}, TResult extends object = {}>({
+  async aggregateFunction<
+    TTableA extends object = {},
+    TResult extends object = {},
+    TTableB extends object = {}
+  >({
     fn,
     column,
     table,
@@ -296,17 +300,33 @@ export class ODBCClient {
     alias,
     distinct,
     expression,
-  }: IAggregateFunctions<T>): Promise<TResult> {
+    join,
+  }: IAggregateFunctions<TTableA, TTableB>): Promise<TResult> {
     let query = "";
     try {
       query += "SELECT ";
       query += fn;
       query += distinct && fn === "COUNT" ? " (DISTINCT " : " (";
-      query += column.toString();
-      query += expression && fn === "SUM" ? ` ${expression}` : "";
-      query += alias ? `) AS ${alias}` : ")";
-      query += groupBy ? `, ${groupBy.join(", ").toString()}` : "";
-      query += ` FROM ${table}`;
+      if (join) {
+        query +=
+          column === "*"
+            ? "*"
+            : utils.mountSelectString(column as string | Array<string>, table);
+        if (join.columns) {
+          query += `, ${utils.mountSelectString(join.columns, join.table)}`;
+        }
+        query += expression && fn === "SUM" ? ` ${expression}` : "";
+        query += alias ? `) AS ${alias}` : ")";
+        query += ` FROM ${table} ${join.type || "INNER"} JOIN ${
+          join.database ? join.database + ":" : ""
+        }${join.table} ON `;
+        query += utils.mountOnString(join.on, table, join.table);
+      } else {
+        query += column.toString();
+        query += expression && fn === "SUM" ? ` ${expression}` : "";
+        query += alias ? `) AS ${alias}` : ")";
+        query += ` FROM ${table}`;
+      }
       query += where ? ` WHERE ${where}` : "";
       query += groupBy ? ` GROUP BY ${groupBy.join(", ").toString()}` : "";
       query += ";";

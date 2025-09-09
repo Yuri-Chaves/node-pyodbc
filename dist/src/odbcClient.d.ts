@@ -10,6 +10,6 @@ export declare class ODBCClient {
     insertMultiple<T extends object>({ data, table, database, model, replace, }: IInsertMultiple<T>): Promise<unknown>;
     update<T extends object>({ data, table, database, where, }: IUpdate<T>): Promise<IDMResult>;
     delete({ table, database, where }: IDelete): Promise<IDMResult>;
-    aggregateFunction<T extends object = {}, TResult extends object = {}>({ fn, column, table, database, where, groupBy, alias, distinct, expression, }: IAggregateFunctions<T>): Promise<TResult>;
+    aggregateFunction<TTableA extends object = {}, TResult extends object = {}, TTableB extends object = {}>({ fn, column, table, database, where, groupBy, alias, distinct, expression, join, }: IAggregateFunctions<TTableA, TTableB>): Promise<TResult>;
     getPaginated<TResult extends object = {}, TTableA extends object = {}, TTableB extends object = {}>({ page, perPage, totalPagesError, order, ...rest }: IPaginated): Promise<IPaginatedResponse<TResult>>;
 }
