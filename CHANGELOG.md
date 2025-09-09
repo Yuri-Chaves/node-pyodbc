@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The library syntax will be updated to use a **builder pattern**.
   The current object-based syntax will be **deprecated and removed** in a future release.
 
+## [0.7.0] - 2025-09-09
+
+### Added
+
+- Support for `JOIN` clauses in `aggregateFunction` function.
+
 ## [0.6.2] - 2025-09-02
 
 ### Fixed
